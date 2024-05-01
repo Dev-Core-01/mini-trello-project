@@ -1,9 +1,5 @@
 # Runtime dependencies, pinned so a checkout is reproducible.
-#
-# Note: Django 3.2 is past end of life. The pin is deliberate for now because
-# graphene-django 2.x does not support Django 4.x; see "Design notes" in the
-# README for the upgrade path (graphene-django 3 + Django 4.2 LTS).
-Django==3.2.25
-graphene-django==2.16.0
-django-cors-headers==4.5.0
-boto3==1.35.36
+Django==5.2.19
+graphene-django==3.2.3
+django-cors-headers==4.9.0
+boto3==1.43.126

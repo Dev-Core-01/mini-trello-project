@@ -2,9 +2,9 @@
 
 # Test suite. moto provides an in-process DynamoDB so the suite needs no
 # network, no AWS account and no Docker.
-pytest==8.3.3
-pytest-django==4.9.0
-moto[dynamodb,server]==5.0.18
+pytest==9.2.0
+pytest-django==4.14.0
+moto[dynamodb,server]==5.2.5
 
 # Linting / formatting.
-ruff==0.6.9
+ruff==0.17.4
