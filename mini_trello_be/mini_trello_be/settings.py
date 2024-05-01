@@ -129,6 +129,15 @@ GRAPHENE = {
 #: GraphiQL is a development tool; it must not be exposed in production.
 GRAPHIQL_ENABLED = env_bool("GRAPHIQL_ENABLED", DEBUG)
 
+#: Schema introspection is what GraphiQL runs on, so it follows GraphiQL.
+GRAPHQL_INTROSPECTION = env_bool("GRAPHQL_INTROSPECTION", GRAPHIQL_ENABLED)
+
+#: The deepest legitimate query is cardPage { cards { id } } (3 levels), and the
+#: client sends 2 root fields. Both limits leave headroom without allowing a
+#: request to fan out into dozens of table scans.
+GRAPHQL_MAX_DEPTH = int(os.environ.get("GRAPHQL_MAX_DEPTH", "5"))
+GRAPHQL_MAX_ROOT_FIELDS = int(os.environ.get("GRAPHQL_MAX_ROOT_FIELDS", "10"))
+
 # ------------------------------------------------------------------- logging
 
 LOGGING = {
