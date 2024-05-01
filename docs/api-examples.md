@@ -1,13 +1,15 @@
 # API examples
 
-Captured against a live backend on 2026-09-25 with the stack described in the
-README's "Running without Docker" section (moto DynamoDB on 8785, Django on 8781).
-Every block below is literal terminal output.
+Captured on 2026-11-09 against the Docker Compose stack after
+`python manage.py seed_board --reset`. The stack ran on remapped host ports;
+the commands below use the default port 8001. Every response is literal output.
 
-## Fetch the board (lanes + cards)
+## Fetch the board
+
+Lanes plus the first page of cards. `nextCursor` is opaque; pass it back as `cursor` for the next page.
 
 ```console
-$ curl -s -X POST http://localhost:8781/graphql -H 'Content-Type: application/json' \
+$ curl -s -X POST http://localhost:8001/graphql -H 'Content-Type: application/json' \
     -d '{"query":"{ lanes { id title position } cardPage(limit: 2) { cards { id title status } nextCursor hasNextPage } }"}' | python -m json.tool
 {
     "data": {
@@ -31,27 +33,77 @@ $ curl -s -X POST http://localhost:8781/graphql -H 'Content-Type: application/js
         "cardPage": {
             "cards": [
                 {
-                    "id": "150bd1b9-04b2-445e-a038-b20aa8d85e4f",
-                    "title": "Move the Django secret key to the environment",
-                    "status": "done"
+                    "id": "10bd9506-28bb-46f7-ad7a-785cc15bc55f",
+                    "title": "Update the volunteer handbook",
+                    "status": "todo"
                 },
                 {
-                    "id": "3368250b-6a9e-4bdc-a7c6-ba5f8f49af58",
-                    "title": "Add pagination to the card list",
-                    "status": "todo"
+                    "id": "439045d1-6600-46d4-8c17-248f46a42240",
+                    "title": "Order new name badges",
+                    "status": "done"
                 }
             ],
-            "nextCursor": "eyJpZCI6ICIzMzY4MjUwYi02YTllLTRiZGMtYTdjNi1iYTVmOGY0OWFmNTgifQ==",
+            "nextCursor": "eyJpZCI6ICI0MzkwNDVkMS02NjAwLTQ2ZDQtOGMxNy0yNDhmNDZhNDIyNDAifQ==",
             "hasNextPage": true
         }
     }
 }
 ```
 
-## Validation errors come back as GraphQL errors, not 500s
+## Create a card
+
+`status` is optional and defaults to the first lane.
 
 ```console
-$ curl -s -X POST http://localhost:8781/graphql -H 'Content-Type: application/json' \
+$ curl -s -X POST http://localhost:8001/graphql -H 'Content-Type: application/json' \
+    -d '{"query":"mutation { createCard(title: \"Print the meetup flyers\", status: \"todo\") { card { id title status } } }"}' | python -m json.tool
+{
+    "data": {
+        "createCard": {
+            "card": {
+                "id": "92de6cad-3ebb-44c8-8169-6acd22d5f5b5",
+                "title": "Print the meetup flyers",
+                "status": "todo"
+            }
+        }
+    }
+}
+```
+
+## A blank title is a validation error
+
+Business-rule failures come back in the `errors` array with `data.createCard` set to null, not as an HTTP 500.
+
+```console
+$ curl -s -X POST http://localhost:8001/graphql -H 'Content-Type: application/json' \
+    -d '{"query":"mutation { createCard(title: \"   \") { card { id } } }"}' | python -m json.tool
+{
+    "errors": [
+        {
+            "message": "Title is required.",
+            "locations": [
+                {
+                    "line": 1,
+                    "column": 12
+                }
+            ],
+            "path": [
+                "createCard"
+            ]
+        }
+    ],
+    "data": {
+        "createCard": null
+    }
+}
+```
+
+## An unknown lane is rejected
+
+The message lists the valid lane ids from `boards/lanes.py`.
+
+```console
+$ curl -s -X POST http://localhost:8001/graphql -H 'Content-Type: application/json' \
     -d '{"query":"mutation { createCard(title: \"x\", status: \"nowhere\") { card { id } } }"}' | python -m json.tool
 {
     "errors": [
@@ -74,10 +126,32 @@ $ curl -s -X POST http://localhost:8781/graphql -H 'Content-Type: application/js
 }
 ```
 
-## An unknown card id returns null rather than crashing
+## Too many root fields in one request
+
+Each `allCards` is a table scan, so a request may select at most `GRAPHQL_MAX_ROOT_FIELDS` (10) root fields. The check runs before any resolver.
 
 ```console
-$ curl -s -X POST http://localhost:8781/graphql -H 'Content-Type: application/json' \
+$ curl -s -X POST http://localhost:8001/graphql -H 'Content-Type: application/json' \
+    -d '{"query":"{ a: allCards { id } b: allCards { id } c: allCards { id } d: allCards { id } e: allCards { id } f: allCards { id } g: allCards { id } h: allCards { id } i: allCards { id } j: allCards { id } k: allCards { id } }"}' | python -m json.tool
+{
+    "errors": [
+        {
+            "message": "An operation may select at most 10 root fields.",
+            "locations": [
+                {
+                    "line": 1,
+                    "column": 1
+                }
+            ]
+        }
+    ]
+}
+```
+
+## An unknown card id returns null
+
+```console
+$ curl -s -X POST http://localhost:8001/graphql -H 'Content-Type: application/json' \
     -d '{"query":"{ card(id: \"does-not-exist\") { id title } }"}' | python -m json.tool
 {
     "data": {
@@ -88,8 +162,10 @@ $ curl -s -X POST http://localhost:8781/graphql -H 'Content-Type: application/js
 
 ## Deleting a card that is not there reports failure
 
+`success` is false rather than a fake success.
+
 ```console
-$ curl -s -X POST http://localhost:8781/graphql -H 'Content-Type: application/json' \
+$ curl -s -X POST http://localhost:8001/graphql -H 'Content-Type: application/json' \
     -d '{"query":"mutation { deleteCard(cardId: \"does-not-exist\") { success } }"}' | python -m json.tool
 {
     "data": {
