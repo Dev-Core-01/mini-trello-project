@@ -26,7 +26,12 @@ export default [
     },
   },
   {
-    files: ["*.config.js", "e2e/**/*.js"],
+    files: ["*.config.js"],
     languageOptions: { globals: globals.node },
+  },
+  {
+    // Playwright specs run in Node, but page.evaluate() callbacks run in the page.
+    files: ["e2e/**/*.js"],
+    languageOptions: { globals: { ...globals.node, ...globals.browser } },
   },
 ];
