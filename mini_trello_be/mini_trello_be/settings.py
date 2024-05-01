@@ -38,6 +38,11 @@ if not SECRET_KEY:
 
 ALLOWED_HOSTS = env_list("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1,0.0.0.0")
 
+# Only the admin sets cookies. Outside DEBUG they are HTTPS-only unless a
+# plain-HTTP deployment opts out explicitly.
+SESSION_COOKIE_SECURE = env_bool("DJANGO_SECURE_COOKIES", not DEBUG)
+CSRF_COOKIE_SECURE = SESSION_COOKIE_SECURE
+
 # -------------------------------------------------------------- application
 
 INSTALLED_APPS = [

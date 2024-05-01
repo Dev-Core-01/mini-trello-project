@@ -103,7 +103,9 @@ class TestSettingsHardening:
                 "-c",
                 "import django;django.setup();"
                 "from django.conf import settings;"
-                "print(settings.DEBUG, settings.GRAPHIQL_ENABLED)",
+                "print(settings.DEBUG, settings.GRAPHIQL_ENABLED,"
+                " settings.GRAPHQL_INTROSPECTION, settings.SESSION_COOKIE_SECURE,"
+                " settings.CSRF_COOKIE_SECURE)",
             ],
             cwd=str(settings.BASE_DIR),
             env=env,
@@ -112,8 +114,8 @@ class TestSettingsHardening:
         )
 
         assert result.returncode == 0, result.stderr
-        # GraphiQL must be off when DEBUG is off.
-        assert result.stdout.strip() == "False False"
+        # GraphiQL and introspection are off, and cookies are HTTPS-only.
+        assert result.stdout.strip() == "False False False True True"
 
     def test_cors_middleware_runs_before_common_middleware(self):
         order = settings.MIDDLEWARE

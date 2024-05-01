@@ -23,9 +23,6 @@ _resource: Any = None
 #: Name of the single DynamoDB table backing the board.
 CARD_TABLE_NAME = os.environ.get("DYNAMODB_CARD_TABLE", "Card")
 
-#: Global secondary index used to read one lane without scanning the table.
-CARD_STATUS_INDEX = "status-created_at-index"
-
 
 def _settings() -> dict[str, Any]:
     """Read connection settings from the environment on every (re)connect."""
