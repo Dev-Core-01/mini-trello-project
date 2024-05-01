@@ -15,6 +15,9 @@ from .repositories import CardNotFound, CardRepository, Page
 #: Keeps a card title to something that fits on a board column.
 MAX_TITLE_LENGTH = 200
 MAX_DESCRIPTION_LENGTH = 5000
+#: Ids are server-generated UUIDs (36 characters). Anything far longer is not
+#: one of ours, and DynamoDB rejects an empty key with a ValidationException.
+MAX_CARD_ID_LENGTH = 64
 
 
 class ValidationError(ValueError):
@@ -36,7 +39,7 @@ class CardService:
         return self.repository.list(**kwargs)
 
     def get_card(self, card_id: str) -> dict[str, Any] | None:
-        return self.repository.get(card_id)
+        return self.repository.get(self._clean_card_id(card_id))
 
     # --------------------------------------------------------------- writes
 
@@ -67,16 +70,23 @@ class CardService:
             changes["description"] = self._clean_description(description)
         if status is not None:
             changes["status"] = self._clean_status(status)
-        return self.repository.update(card_id, **changes)
+        return self.repository.update(self._clean_card_id(card_id), **changes)
 
     def move_card(self, card_id: str, status: str) -> dict[str, Any]:
         """Move a card to another lane. A move is just a validated status change."""
         return self.update_card(card_id, status=status)
 
     def delete_card(self, card_id: str) -> bool:
-        return self.repository.delete(card_id)
+        return self.repository.delete(self._clean_card_id(card_id))
 
     # ----------------------------------------------------------- validation
+
+    @staticmethod
+    def _clean_card_id(card_id: str) -> str:
+        card_id = (card_id or "").strip()
+        if not card_id or len(card_id) > MAX_CARD_ID_LENGTH:
+            raise ValidationError("A valid card id is required.")
+        return card_id
 
     @staticmethod
     def _clean_title(title: str) -> str:

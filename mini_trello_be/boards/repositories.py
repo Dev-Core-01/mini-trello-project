@@ -57,10 +57,16 @@ def decode_cursor(cursor: str | None) -> dict[str, Any] | None:
     if not cursor:
         return None
     try:
-        return json.loads(base64.urlsafe_b64decode(cursor.encode()).decode())
+        key = json.loads(base64.urlsafe_b64decode(cursor.encode()).decode())
     except (ValueError, TypeError):
+        key = None
+    # Only a key of the shape this module produces may reach DynamoDB. Any
+    # other JSON (a list, a string, extra attributes) used to be passed
+    # straight through as ExclusiveStartKey and failed inside boto3.
+    if not (isinstance(key, dict) and set(key) == {"id"} and isinstance(key["id"], str)):
         logger.warning("Discarding malformed pagination cursor")
         return None
+    return key
 
 
 class Page(list):

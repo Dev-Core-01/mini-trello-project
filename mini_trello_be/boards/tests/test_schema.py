@@ -78,6 +78,11 @@ class TestQueries:
         assert data["cardPage"]["hasNextPage"] is False
         assert data["cardPage"]["nextCursor"] is None
 
+    def test_a_tampered_cursor_starts_from_the_first_page(self, seeded, card_table):
+        data = run_ok('query { cardPage(limit: 50, cursor: "WyJ4Il0=") { cards { id } } }')
+
+        assert len(data["cardPage"]["cards"]) == len(seeded)
+
     def test_lanes_come_from_the_registry(self, card_table):
         data = run_ok("query { lanes { id title position } }")
 
@@ -135,6 +140,12 @@ class TestMutations:
 
         assert data["deleteCard"]["success"] is True
         assert len(run_ok(ALL_CARDS)["allCards"]) == len(seeded) - 1
+
+    def test_an_empty_card_id_is_a_graphql_error_not_a_crash(self, card_table):
+        result = run(DELETE_CARD, id="")
+
+        assert result.errors
+        assert "valid card id" in str(result.errors[0])
 
     def test_delete_of_a_missing_card_reports_failure(self, card_table):
         """The original hardcoded success: true for any id at all."""

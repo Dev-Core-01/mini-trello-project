@@ -6,7 +6,7 @@ import pytest
 
 from boards import lanes
 from boards.repositories import CardNotFound
-from boards.services import MAX_TITLE_LENGTH, ValidationError
+from boards.services import MAX_CARD_ID_LENGTH, MAX_TITLE_LENGTH, ValidationError
 
 
 class TestCreateValidation:
@@ -71,6 +71,18 @@ class TestUpdateValidation:
             service.update_card(card["id"], title="Fine", status="nowhere")
 
         assert service.get_card(card["id"])["title"] == card["title"]
+
+
+class TestCardIds:
+    @pytest.mark.parametrize("card_id", ["", "   ", "x" * (MAX_CARD_ID_LENGTH + 1)])
+    def test_reads_and_writes_reject_an_invalid_id(self, service, card_id):
+        for call in (
+            lambda: service.get_card(card_id),
+            lambda: service.update_card(card_id, title="New"),
+            lambda: service.delete_card(card_id),
+        ):
+            with pytest.raises(ValidationError, match="valid card id"):
+                call()
 
 
 class TestMove:

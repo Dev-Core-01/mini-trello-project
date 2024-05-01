@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import base64
+
 import pytest
 
 from boards.repositories import (
@@ -174,6 +176,20 @@ class TestCursorEncoding:
     def test_decode_tolerates_garbage(self):
         assert decode_cursor("!!!not-valid!!!") is None
         assert decode_cursor(None) is None
+
+    @pytest.mark.parametrize(
+        "payload",
+        ['"just-a-string"', "[1, 2]", '{"id": 5}', '{"id": "a", "status": "todo"}', "{}"],
+    )
+    def test_decode_rejects_json_that_is_not_a_card_key(self, payload):
+        cursor = base64.urlsafe_b64encode(payload.encode()).decode()
+
+        assert decode_cursor(cursor) is None
+
+    def test_a_wrong_shaped_cursor_restarts_the_listing(self, repository, seeded):
+        cursor = base64.urlsafe_b64encode(b'["not", "a", "key"]').decode()
+
+        assert len(repository.list(cursor=cursor)) == 3
 
 
 def test_page_is_a_list_with_a_cursor():
