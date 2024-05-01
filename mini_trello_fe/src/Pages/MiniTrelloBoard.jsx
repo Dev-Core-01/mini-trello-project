@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { DragDropContext } from "react-beautiful-dnd";
+import { DragDropContext } from "@hello-pangea/dnd";
 
 import { Lane } from "../Components/Lane";
 import { TicketFormModal } from "../Components/TicketFormModal";
