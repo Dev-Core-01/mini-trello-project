@@ -1,4 +1,4 @@
-import React from "react";
+import { describe, expect, it } from "vitest";
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
@@ -75,7 +75,7 @@ describe("MiniTrelloBoard", () => {
     renderWithApollo(<MiniTrelloBoard />, [failing]);
 
     expect(await screen.findByRole("alert")).toHaveTextContent("Could not reach the API");
-    expect(screen.getByText(/REACT_APP_GRAPHQL_URL/)).toBeInTheDocument();
+    expect(screen.getByText(/VITE_GRAPHQL_URL/)).toBeInTheDocument();
   });
 
   it("opens an empty form from the Add card button", async () => {

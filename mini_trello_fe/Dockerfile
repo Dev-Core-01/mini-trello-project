@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # ---------- build ----------------------------------------------------------
-FROM node:20-alpine AS build
+FROM node:22-alpine AS build
 
 WORKDIR /app
 
@@ -11,19 +11,19 @@ RUN npm ci
 
 COPY . .
 
-# Create React App inlines REACT_APP_* at build time, so the API URL is a
-# build argument rather than a runtime environment variable.
-ARG REACT_APP_GRAPHQL_URL=http://localhost:8001/graphql
-ENV REACT_APP_GRAPHQL_URL=$REACT_APP_GRAPHQL_URL
+# Vite inlines VITE_* at build time, so the API URL is a build argument
+# rather than a runtime environment variable.
+ARG VITE_GRAPHQL_URL=http://localhost:8001/graphql
+ENV VITE_GRAPHQL_URL=$VITE_GRAPHQL_URL
 RUN npm run build
 
 # ---------- runtime --------------------------------------------------------
 # The built app is static files; nginx serves them. No Node in the runtime.
-FROM nginx:1.27-alpine AS runtime
+FROM nginx:1.30-alpine AS runtime
 
 RUN rm /etc/nginx/conf.d/default.conf
 COPY nginx.conf /etc/nginx/conf.d/default.conf
-COPY --from=build /app/build /usr/share/nginx/html
+COPY --from=build /app/dist /usr/share/nginx/html
 
 # nginx:alpine ships an unprivileged "nginx" user; give it the paths it needs.
 RUN touch /var/run/nginx.pid \

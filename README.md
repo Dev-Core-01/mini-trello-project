@@ -6,7 +6,7 @@ There is one shared board and no user accounts.
 
 ![Board](docs/screenshots/board.png)
 
-**Stack:** React 18, Apollo Client, react-beautiful-dnd, Django 3.2, graphene-django 2, boto3 / DynamoDB, pytest + moto.
+**Stack:** React 18 on Vite, Apollo Client, react-beautiful-dnd, Django 5.2, graphene-django 3, boto3 / DynamoDB, pytest + moto.
 
 ## Running it
 
@@ -42,10 +42,10 @@ Then in another terminal:
 ```bash
 cd mini_trello_fe
 npm ci
-REACT_APP_GRAPHQL_URL=http://localhost:8001/graphql npm start
+VITE_GRAPHQL_URL=http://localhost:8001/graphql npm run dev
 ```
 
-Backend settings are listed in `mini_trello_be/.env.example` and the frontend one in `mini_trello_fe/.env.example`. `REACT_APP_GRAPHQL_URL` is read at build time, so changing it needs a rebuild.
+Backend settings are listed in `mini_trello_be/.env.example` and the frontend one in `mini_trello_fe/.env.example`. `VITE_GRAPHQL_URL` is read at build time, so changing it needs a rebuild.
 
 ## Code layout
 
@@ -77,4 +77,3 @@ Backend tests use moto, so they don't need network access or AWS.
 
 - Add authentication; right now anyone who can reach the API can read and delete every card.
 - Persist card order within a lane (only moves between lanes are saved).
-- Upgrade to Django 4.2 and graphene-django 3, since Django 3.2 is past end of life.

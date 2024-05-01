@@ -18,7 +18,7 @@ db.sqlite3-journal
 
 # ---- Node ----
 node_modules/
-/mini_trello_fe/build/
+/mini_trello_fe/dist/
 npm-debug.log*
 yarn-error.log*
 
@@ -43,8 +43,6 @@ Thumbs.db
 # ---- Local-only folders ----
 # A Python venv created at the repo root on one machine; never part of the project.
 /project_venv/
-/mini_trello_fe/build/
-/mini_trello_fe/dist/
 coverage/
 tmp/
 *.log

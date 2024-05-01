@@ -1,9 +1,5 @@
 /**
- * Runtime configuration.
- *
- * Create React App inlines REACT_APP_* variables at build time. The URL was
- * previously hardcoded to http://localhost:8001/graphql, so a build could only
- * ever talk to a developer's laptop.
+ * Vite inlines VITE_* variables at build time, so the API URL is fixed per
+ * build. The fallback matches the backend's default port.
  */
-export const GRAPHQL_URL =
-  process.env.REACT_APP_GRAPHQL_URL || "http://localhost:8001/graphql";
+export const GRAPHQL_URL = import.meta.env.VITE_GRAPHQL_URL || "http://localhost:8001/graphql";

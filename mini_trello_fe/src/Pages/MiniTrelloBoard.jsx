@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { DragDropContext } from "react-beautiful-dnd";
 
 import { Lane } from "../Components/Lane";
@@ -55,7 +55,7 @@ export const MiniTrelloBoard = () => {
           <h2>Could not reach the API</h2>
           <p>{error.message}</p>
           <p className="board__state-hint">
-            Check that the backend is running and that REACT_APP_GRAPHQL_URL points at it.
+            Check that the backend is running and that VITE_GRAPHQL_URL points at it.
           </p>
         </div>
       ) : null}

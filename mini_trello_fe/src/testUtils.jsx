@@ -1,4 +1,3 @@
-import React from "react";
 import { MockedProvider } from "@apollo/client/testing";
 import { render } from "@testing-library/react";
 
@@ -25,7 +24,7 @@ export const boardMock = (cards) => ({
 
 export const renderWithApollo = (ui, mocks = []) =>
   render(
-    <MockedProvider mocks={mocks} addTypename={false}>
+    <MockedProvider mocks={mocks}>
       {ui}
     </MockedProvider>
   );

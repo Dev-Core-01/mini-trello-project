@@ -46,8 +46,8 @@ services:
     build:
       context: ./mini_trello_fe
       args:
-        # Baked in at build time; CRA cannot read this at runtime.
-        REACT_APP_GRAPHQL_URL: http://localhost:${BACKEND_PORT:-8001}/graphql
+        # Baked in at build time; Vite cannot read this at runtime.
+        VITE_GRAPHQL_URL: http://localhost:${BACKEND_PORT:-8001}/graphql
     ports:
       - "${FRONTEND_PORT:-3000}:8080"
     depends_on:

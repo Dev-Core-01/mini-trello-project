@@ -1,12 +1,12 @@
-import React from "react";
+import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 import { TicketFormModal } from "../Components/TicketFormModal";
 
 const setup = (props = {}) => {
-  const onSubmit = jest.fn().mockResolvedValue(undefined);
-  const onClose = jest.fn();
+  const onSubmit = vi.fn().mockResolvedValue(undefined);
+  const onClose = vi.fn();
   render(
     <TicketFormModal card={null} onSubmit={onSubmit} onClose={onClose} {...props} />
   );
@@ -52,8 +52,8 @@ describe("TicketFormModal", () => {
 
   it("surfaces a server error instead of closing", async () => {
     const user = userEvent.setup();
-    const onSubmit = jest.fn().mockRejectedValue(new Error("Unknown status 'nowhere'."));
-    const onClose = jest.fn();
+    const onSubmit = vi.fn().mockRejectedValue(new Error("Unknown status 'nowhere'."));
+    const onClose = vi.fn();
     render(<TicketFormModal card={null} onSubmit={onSubmit} onClose={onClose} />);
 
     await user.type(screen.getByLabelText("Title"), "Doomed");

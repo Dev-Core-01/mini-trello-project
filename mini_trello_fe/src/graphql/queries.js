@@ -1,4 +1,4 @@
-import gql from "graphql-tag";
+import { gql } from "@apollo/client";
 
 export const CARD_FIELDS = gql`
   fragment CardFields on CardType {
