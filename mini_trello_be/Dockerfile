@@ -37,6 +37,12 @@ RUN python -m pip install --no-index --find-links=/wheels -r requirements.txt \
 
 COPY --chown=appuser:appuser . .
 
+# WORKDIR leaves /app owned by root, so appuser could not create the SQLite
+# file for Django's own tables and the entrypoint's migrate step failed.
+# Give it a directory of its own instead of making the code writable.
+RUN mkdir /app/data && chown appuser:appuser /app/data
+ENV DJANGO_DB_PATH=/app/data/db.sqlite3
+
 USER appuser
 
 EXPOSE 8001
