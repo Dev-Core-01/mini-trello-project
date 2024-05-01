@@ -1,5 +1,5 @@
-import { useCallback, useMemo } from "react";
-import { useMutation, useQuery } from "@apollo/client";
+import { useCallback, useEffect, useMemo } from "react";
+import { NetworkStatus, useMutation, useQuery } from "@apollo/client";
 
 import {
   ADD_CARD,
@@ -18,7 +18,20 @@ import { GET_BOARD } from "../graphql/queries";
  * own.
  */
 export function useBoard() {
-  const { data, loading, error } = useQuery(GET_BOARD);
+  const { data, loading, error, fetchMore, networkStatus } = useQuery(GET_BOARD, {
+    notifyOnNetworkStatusChange: true,
+  });
+  const cards = useMemo(() => data?.cardPage?.cards ?? [], [data]);
+
+  // The board used to read a single page, so every card past the first 100
+  // was silently missing. Follow the cursor until the server says it is done;
+  // waiting for the ready status keeps it to one page request at a time.
+  const nextCursor = data?.cardPage?.hasNextPage ? data.cardPage.nextCursor : null;
+  useEffect(() => {
+    if (nextCursor && networkStatus === NetworkStatus.ready) {
+      fetchMore({ variables: { cursor: nextCursor } });
+    }
+  }, [nextCursor, networkStatus, fetchMore]);
 
   const [addCardMutation] = useMutation(ADD_CARD, {
     refetchQueries: [{ query: GET_BOARD }],
@@ -36,7 +49,6 @@ export function useBoard() {
    */
   const lanes = useMemo(() => {
     const laneDefinitions = data?.lanes ?? [];
-    const cards = data?.allCards ?? [];
 
     return [...laneDefinitions]
       .sort((a, b) => a.position - b.position)
@@ -44,9 +56,9 @@ export function useBoard() {
         ...lane,
         cards: cards.filter((card) => card.status === lane.id),
       }));
-  }, [data]);
+  }, [data, cards]);
 
-  const cardCount = data?.allCards?.length ?? 0;
+  const cardCount = cards.length;
 
   const createCard = useCallback(
     ({ title, description, status }) =>
@@ -78,14 +90,14 @@ export function useBoard() {
             __typename: "UpdateCard",
             card: {
               __typename: "CardType",
-              ...(data?.allCards ?? []).find((card) => card.id === id),
+              ...cards.find((card) => card.id === id),
               id,
               status,
             },
           },
         },
       }),
-    [moveCardMutation, data]
+    [moveCardMutation, cards]
   );
 
   return {

@@ -3,6 +3,7 @@ import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 import { MiniTrelloBoard } from "../Pages/MiniTrelloBoard";
+import { DELETE_CARD } from "../graphql/mutations";
 import { GET_BOARD } from "../graphql/queries";
 import { boardMock, card, renderWithApollo } from "../testUtils";
 
@@ -99,5 +100,41 @@ describe("MiniTrelloBoard", () => {
     await waitFor(() => expect(screen.getByLabelText("Title")).toHaveValue("Write the spec"));
     expect(screen.getByLabelText("Description")).toHaveValue("One pager");
     expect(screen.getByText("Edit card")).toBeInTheDocument();
+  });
+  it("uses the singular for a single card", async () => {
+    renderWithApollo(<MiniTrelloBoard />, [boardMock([card("1", "Only card", "todo")])]);
+
+    expect(await screen.findByText("1 card across 3 lanes")).toBeInTheDocument();
+  });
+
+  it("keeps loading pages until the whole board is on screen", async () => {
+    const firstPage = [card("1", "Write the spec", "todo"), card("2", "Build it", "in-progress")];
+    const secondPage = [card("3", "Ship it", "done")];
+
+    renderWithApollo(<MiniTrelloBoard />, [
+      boardMock(firstPage, { nextCursor: "page-2" }),
+      boardMock(secondPage, { cursor: "page-2" }),
+    ]);
+
+    expect(await screen.findByText("3 cards across 3 lanes")).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Done" })).toHaveTextContent("Ship it");
+  });
+
+  it("explains a failed delete instead of failing silently", async () => {
+    const user = userEvent.setup();
+    const failingDelete = {
+      request: { query: DELETE_CARD, variables: { id: "1" } },
+      error: new Error("Network down"),
+    };
+    renderWithApollo(<MiniTrelloBoard />, [boardMock(CARDS), failingDelete]);
+
+    await screen.findByRole("region", { name: "To Do" });
+    await user.click(screen.getByRole("button", { name: "Delete Write the spec" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Could not delete the card: Network down"
+    );
+    await user.click(screen.getByRole("button", { name: "Dismiss" }));
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
 });

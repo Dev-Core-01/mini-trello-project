@@ -9,20 +9,28 @@ export const CARD_FIELDS = gql`
   }
 `;
 
+/** The server caps a page at 200 cards; the board asks for full pages. */
+export const BOARD_PAGE_SIZE = 200;
+
 /**
- * One round trip for the whole board: the lane definitions come from the
- * server's lane registry, so adding a lane needs no frontend change.
+ * Lanes come from the server's lane registry, so adding a lane needs no
+ * frontend change. Cards arrive in pages; useBoard follows the cursor until
+ * the whole board is loaded.
  */
 export const GET_BOARD = gql`
   ${CARD_FIELDS}
-  query GetBoard {
+  query GetBoard($cursor: String) {
     lanes {
       id
       title
       position
     }
-    allCards {
-      ...CardFields
+    cardPage(limit: ${BOARD_PAGE_SIZE}, cursor: $cursor) {
+      cards {
+        ...CardFields
+      }
+      nextCursor
+      hasNextPage
     }
   }
 `;

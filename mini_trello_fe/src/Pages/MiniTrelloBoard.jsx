@@ -6,11 +6,24 @@ import { TicketFormModal } from "../Components/TicketFormModal";
 import { useBoard } from "../hooks/useBoard";
 import "./MiniTrelloBoard.css";
 
+const plural = (count, noun) => `${count} ${noun}${count === 1 ? "" : "s"}`;
+
 export const MiniTrelloBoard = () => {
   const { lanes, cardCount, loading, error, createCard, updateCard, deleteCard, moveCard } =
     useBoard();
   const [editing, setEditing] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [notice, setNotice] = useState(null);
+
+  // A failed move is rolled back by Apollo (the optimistic update is
+  // discarded), but the user still needs to know why the card jumped back.
+  const reportFailure = (action) => (failure) =>
+    setNotice(`Could not ${action}: ${failure.message}`);
+
+  const removeCard = (id) => {
+    setNotice(null);
+    deleteCard(id).catch(reportFailure("delete the card"));
+  };
 
   const openAdd = () => {
     setEditing(null);
@@ -33,7 +46,8 @@ export const MiniTrelloBoard = () => {
     const { destination, source, draggableId } = result;
     // Dropped outside a lane, or back where it started.
     if (!destination || destination.droppableId === source.droppableId) return;
-    moveCard(draggableId, destination.droppableId);
+    setNotice(null);
+    moveCard(draggableId, destination.droppableId).catch(reportFailure("move the card"));
   };
 
   return (
@@ -42,7 +56,9 @@ export const MiniTrelloBoard = () => {
         <div>
           <h1 className="board__title">Mini Trello</h1>
           <p className="board__subtitle">
-            {loading ? "Loading board…" : `${cardCount} cards across ${lanes.length} lanes`}
+            {loading
+              ? "Loading board…"
+              : `${plural(cardCount, "card")} across ${plural(lanes.length, "lane")}`}
           </p>
         </div>
         <button type="button" className="button" onClick={openAdd}>
@@ -60,6 +76,15 @@ export const MiniTrelloBoard = () => {
         </div>
       ) : null}
 
+      {notice ? (
+        <div className="board__notice" role="alert">
+          <p>{notice}</p>
+          <button type="button" className="button button--ghost" onClick={() => setNotice(null)}>
+            Dismiss
+          </button>
+        </div>
+      ) : null}
+
       {loading && !error ? (
         <div className="board__state">
           <p>Fetching your cards…</p>
@@ -70,7 +95,7 @@ export const MiniTrelloBoard = () => {
         <DragDropContext onDragEnd={handleDragEnd}>
           <div className="board__lanes">
             {lanes.map((lane) => (
-              <Lane key={lane.id} lane={lane} onEdit={openEdit} onDelete={deleteCard} />
+              <Lane key={lane.id} lane={lane} onEdit={openEdit} onDelete={removeCard} />
             ))}
           </div>
         </DragDropContext>

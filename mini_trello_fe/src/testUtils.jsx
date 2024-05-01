@@ -1,6 +1,7 @@
 import { MockedProvider } from "@apollo/client/testing";
 import { render } from "@testing-library/react";
 
+import { createCache } from "./apollo";
 import { GET_BOARD } from "./graphql/queries";
 
 export const lanes = [
@@ -17,14 +18,24 @@ export const card = (id, title, status, description = "") => ({
   status,
 });
 
-export const boardMock = (cards) => ({
-  request: { query: GET_BOARD },
-  result: { data: { lanes, allCards: cards } },
+export const boardMock = (cards, { cursor, nextCursor = null } = {}) => ({
+  request: { query: GET_BOARD, variables: cursor ? { cursor } : {} },
+  result: {
+    data: {
+      lanes,
+      cardPage: {
+        __typename: "CardPage",
+        cards,
+        nextCursor,
+        hasNextPage: Boolean(nextCursor),
+      },
+    },
+  },
 });
 
 export const renderWithApollo = (ui, mocks = []) =>
   render(
-    <MockedProvider mocks={mocks}>
+    <MockedProvider mocks={mocks} cache={createCache()}>
       {ui}
     </MockedProvider>
   );

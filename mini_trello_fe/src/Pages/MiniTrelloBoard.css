@@ -63,6 +63,20 @@
   font-size: 13px;
 }
 
+.board__notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  border-left: 4px solid var(--danger);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+  font-size: 14px;
+}
+
 /* ----------------------------------------------------------------- lanes */
 
 .board__lanes {
