@@ -1,4 +1,4 @@
-"""Populate the board with a realistic set of cards for demos and screenshots."""
+"""Populate the board with a fictional community-group board for demos and screenshots."""
 
 from __future__ import annotations
 
@@ -8,55 +8,35 @@ from boards.services import CardService
 
 SEED_CARDS = [
     (
-        "Design the board layout",
-        "Three fixed lanes, drag to move between them.",
+        "Draft the spring newsletter",
+        "Lead with the new opening hours and the volunteer drive.",
         "todo",
     ),
     (
-        "Add pagination to the card list",
-        "Cursor-based; the scan used to truncate at 1 MB.",
+        "Book a venue for the summer meetup",
+        "Two halls shortlisted; decide by Friday.",
+        "todo",
+    ),
+    ("Collect photos from the repair workshop", "", "todo"),
+    (
+        "Update the volunteer handbook",
+        "Section 3 still describes the old sign-up form.",
         "todo",
     ),
     (
-        "Write the Playwright screenshot script",
-        "1440x900, seeded data, no empty states.",
-        "todo",
-    ),
-    (
-        "Audit the GraphQL error paths",
-        "Unknown ids should return errors, not 500s.",
-        "todo",
-    ),
-    (
-        "Extract the service layer",
-        "Validation out of the resolvers and into CardService.",
+        "Redesign the sign-up form",
+        "Fewer fields, and the postcode becomes optional.",
         "in-progress",
     ),
     (
-        "Make the DynamoDB client lazy",
-        "No network calls at import time, so tests can mock it.",
+        "Move the mailing list to the new provider",
+        "Export done; importing in batches of 500.",
         "in-progress",
     ),
-    (
-        "Replace the entrypoint script",
-        "Idempotent management command instead of a module-level create_table.",
-        "in-progress",
-    ),
-    (
-        "Remove the committed virtualenv",
-        "162 MB of site-packages tracked in git.",
-        "done",
-    ),
-    (
-        "Move the Django secret key to the environment",
-        "Was hardcoded in settings.py.",
-        "done",
-    ),
-    (
-        "Drop the unused Tailwind import",
-        "Shipped raw @tailwind directives in the CSS bundle.",
-        "done",
-    ),
+    ("Write the onboarding checklist", "", "in-progress"),
+    ("Order new name badges", "Arrived on Tuesday.", "done"),
+    ("Publish the autumn event calendar", "", "done"),
+    ("Fix the broken link in the site footer", "", "done"),
 ]
 
 
