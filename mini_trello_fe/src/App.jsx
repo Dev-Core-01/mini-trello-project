@@ -1,11 +1,11 @@
 import { ApolloProvider } from "@apollo/client";
 
 import client from "./apollo";
-import { MiniTrelloBoard } from "./Pages/MiniTrelloBoard";
+import { Board } from "./Pages/Board";
 
 const App = () => (
   <ApolloProvider client={client}>
-    <MiniTrelloBoard />
+    <Board />
   </ApolloProvider>
 );
 

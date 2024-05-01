@@ -4,11 +4,11 @@ import { DragDropContext } from "@hello-pangea/dnd";
 import { Lane } from "../Components/Lane";
 import { TicketFormModal } from "../Components/TicketFormModal";
 import { useBoard } from "../hooks/useBoard";
-import "./MiniTrelloBoard.css";
+import "./Board.css";
 
 const plural = (count, noun) => `${count} ${noun}${count === 1 ? "" : "s"}`;
 
-export const MiniTrelloBoard = () => {
+export const Board = () => {
   const { lanes, cardCount, loading, error, createCard, updateCard, deleteCard, moveCard } =
     useBoard();
   const [editing, setEditing] = useState(null);
@@ -50,16 +50,18 @@ export const MiniTrelloBoard = () => {
     moveCard(draggableId, destination.droppableId).catch(reportFailure("move the card"));
   };
 
+  const summary =
+    cardCount === 0
+      ? "Nothing on the board yet. Add the first card to get started."
+      : `${plural(cardCount, "card")} across ${plural(lanes.length, "lane")}`;
+
   return (
-    <div className="board">
+    <main className="board">
       <header className="board__header">
         <div>
-          <h1 className="board__title">Mini Trello</h1>
-          <p className="board__subtitle">
-            {loading
-              ? "Loading board…"
-              : `${plural(cardCount, "card")} across ${plural(lanes.length, "lane")}`}
-          </p>
+          <p className="board__brand">Laneway</p>
+          <h1 className="board__title">Team board</h1>
+          <p className="board__subtitle">{loading ? "Loading board…" : summary}</p>
         </div>
         <button type="button" className="button" onClick={openAdd}>
           Add card
@@ -104,6 +106,6 @@ export const MiniTrelloBoard = () => {
       {isModalOpen ? (
         <TicketFormModal card={editing} onSubmit={handleSubmit} onClose={closeModal} />
       ) : null}
-    </div>
+    </main>
   );
 };

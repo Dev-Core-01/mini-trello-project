@@ -7,12 +7,14 @@ export const Lane = ({ lane, onEdit, onDelete }) => (
     {(provided, snapshot) => (
       <section
         className={`lane${snapshot.isDraggingOver ? " lane--active" : ""}`}
+        data-position={lane.position}
         aria-label={lane.title}
       >
         <header className="lane__header">
           <h2 className="lane__title">{lane.title}</h2>
-          <span className="lane__count" aria-label={`${lane.cards.length} cards`}>
+          <span className="lane__count">
             {lane.cards.length}
+            <span className="visually-hidden"> {lane.cards.length === 1 ? "card" : "cards"}</span>
           </span>
         </header>
 
